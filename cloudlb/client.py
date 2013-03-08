@@ -119,10 +119,13 @@ class CLBClient(httplib2.Http):
             if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
                 sys.stderr.write("(413) BODY:")
                 pp.pprint(body)
-            now = datetime.datetime.strptime(response['date'],
-                    '%a, %d %b %Y %H:%M:%S %Z')
-            # Retry-After header now doesn't always return a timestamp, 
-            # try parsing the timestamp, if that fails wait 5 seconds 
+            if 'date' in response:
+                now = datetime.datetime.strptime(response['date'],
+                        '%a, %d %b %Y %H:%M:%S %Z')
+            else:
+                now = datetime.datetime.utcnow()
+            # Retry-After header now doesn't always return a timestamp,
+            # try parsing the timestamp, if that fails wait 5 seconds
             # and try again.  If it succeeds figure out how long to wait
             try:
                 retry = datetime.datetime.strptime(response['retry-after'],
@@ -167,7 +170,7 @@ class CLBClient(httplib2.Http):
             raise cloudlb.errors.BadRequest(response.status, message)
         elif response.status == 422:
             if 'unprocessable' in message:
-                raise cloudlb.errors.UnprocessableEntity(response.status, 
+                raise cloudlb.errors.UnprocessableEntity(response.status,
                         message)
             else:
                 raise cloudlb.errors.ImmutableEntity(response.status,
