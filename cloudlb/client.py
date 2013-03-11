@@ -142,7 +142,7 @@ class CLBClient(httplib2.Http):
                 if (retry - now) > datetime.timedelta(seconds=10):
                     raise cloudlb.errors.RateLimit((retry - now))
                 else:
-                    time.sleep((retry - now).seconds)
+                    time.sleep(5)
                     response, body = self.request(fullurl, method, **kwargs)
 
         if body:
